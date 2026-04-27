@@ -1,0 +1,21 @@
+[Unit]
+Description=SmartLeather RetanFactor - Streamlit Application
+After=network.target
+
+[Service]
+User=viposa
+Group=viposa
+WorkingDirectory=/var/www/retanfactor
+Environment="PATH=/var/www/retanfactor/deploy/env/bin"
+EnvironmentFile=/var/www/retanfactor/.env
+ExecStart=/var/www/retanfactor/deploy/env/bin/streamlit run pages/01_relatorio.py --server.port 8501 --server.address 127.0.0.1
+
+Restart=always
+RestartSec=5
+
+# Segurança
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
