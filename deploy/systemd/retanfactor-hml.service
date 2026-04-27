@@ -1,0 +1,53 @@
+# systemd unit — Retanfactor Homologação
+# Caminho: /etc/systemd/system/retanfactor-hml.service
+#
+# Instalação:
+#   sudo cp deploy/systemd/retanfactor-hml.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable retanfactor-hml
+#   sudo systemctl start retanfactor-hml
+#
+# Operação:
+#   sudo systemctl status  retanfactor-hml
+#   sudo systemctl restart retanfactor-hml
+#   sudo journalctl -u retanfactor-hml -f
+
+[Unit]
+Description=Retanfactor — Relatório de Recurtimento (Homologação)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=retanfactor
+Group=retanfactor
+WorkingDirectory=/opt/retanfactor
+
+# Variáveis de ambiente — homologação
+# ATENÇÃO: APP_ENV=homologacao ativa banner vermelho e desabilita exportação PDF.
+EnvironmentFile=/opt/retanfactor/.env.homologacao
+
+# Porta diferente da produção para coexistência no mesmo servidor
+ExecStart=/opt/retanfactor/venv/bin/streamlit run app.py \
+    --server.port=8502 \
+    --server.address=127.0.0.1 \
+    --server.headless=true \
+    --server.enableCORS=false \
+    --server.enableXsrfProtection=true \
+    --browser.gatherUsageStats=false
+
+Restart=on-failure
+RestartSec=5s
+
+TimeoutStartSec=30s
+TimeoutStopSec=10s
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=retanfactor-hml
+
+[Install]
+WantedBy=multi-user.target

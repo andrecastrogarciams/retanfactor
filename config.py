@@ -67,3 +67,12 @@ def render_env_banner() -> None:
             "dados reais de Oracle. Exportação PDF desabilitada.",
             icon="🚧",
         )
+
+
+# ---------------------------------------------------------------------------
+# Logging — configurado uma única vez na inicialização (Story 3.3 AC1)
+# ---------------------------------------------------------------------------
+
+from logging_config import setup_logging  # noqa: E402
+
+setup_logging(LOG_DIR)

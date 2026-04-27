@@ -1,7 +1,33 @@
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+env/
+*.egg-info/
+.eggs/
+dist/
+*.so
+
+# Pip artifacts espúrios (redirect de >=version)
+=*
+
+# SQLite — dados locais
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Streamlit cache
+.streamlit/
 
 # Environment & Secrets (AIOX)
 .env
+.env.producao
+.env.homologacao
 .env.local
 .env.*.local
 *.key

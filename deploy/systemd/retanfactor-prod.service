@@ -1,0 +1,56 @@
+# systemd unit — Retanfactor Produção
+# Caminho: /etc/systemd/system/retanfactor-prod.service
+#
+# Instalação:
+#   sudo cp deploy/systemd/retanfactor-prod.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable retanfactor-prod
+#   sudo systemctl start retanfactor-prod
+#
+# Operação:
+#   sudo systemctl status  retanfactor-prod
+#   sudo systemctl restart retanfactor-prod
+#   sudo journalctl -u retanfactor-prod -f
+
+[Unit]
+Description=Retanfactor — Relatório de Recurtimento (Produção)
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=retanfactor
+Group=retanfactor
+WorkingDirectory=/opt/retanfactor
+
+# Variáveis de ambiente — produção
+EnvironmentFile=/opt/retanfactor/.env.producao
+
+# Comando de inicialização
+ExecStart=/opt/retanfactor/venv/bin/streamlit run app.py \
+    --server.port=8501 \
+    --server.address=127.0.0.1 \
+    --server.headless=true \
+    --server.enableCORS=false \
+    --server.enableXsrfProtection=true \
+    --browser.gatherUsageStats=false
+
+# Reinício automático em falha
+Restart=on-failure
+RestartSec=5s
+
+# Limites de recursos
+TimeoutStartSec=30s
+TimeoutStopSec=10s
+
+# Segurança mínima
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logs via journald (complemento ao arquivo de log da aplicação)
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=retanfactor-prod
+
+[Install]
+WantedBy=multi-user.target
