@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Relatório de Recurtimento - RetanFactor</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#3a5f94",
+                        "inverse-on-surface": "#f1f0f5",
+                        "surface-container": "#eeedf2",
+                        "surface-dim": "#dad9de",
+                        "primary-fixed": "#d5e3ff",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f4f3f8",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1a1c1f",
+                        "background": "#f9f9fe",
+                        "inverse-primary": "#a7c8ff",
+                        "surface-container-high": "#e8e8ed",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "on-surface-variant": "#43474f",
+                        "primary": "#001e40",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "on-surface": "#1a1c1f",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#381300",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#d5e0f7",
+                        "on-primary-fixed": "#001b3c",
+                        "outline-variant": "#c3c6d1",
+                        "primary-container": "#003366",
+                        "on-primary-container": "#799dd6",
+                        "on-secondary-container": "#586377",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#d8885c",
+                        "inverse-surface": "#2f3034",
+                        "secondary-fixed-dim": "#bcc7dd",
+                        "surface-variant": "#e2e2e7",
+                        "surface-bright": "#f9f9fe",
+                        "on-secondary-fixed": "#111c2c",
+                        "surface": "#f9f9fe",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-fixed": "#ffdbca",
+                        "on-tertiary-fixed": "#341100",
+                        "secondary-fixed": "#d8e3fa",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "tertiary-container": "#592300",
+                        "on-error-container": "#93000a",
+                        "secondary": "#545f72",
+                        "tertiary-fixed-dim": "#ffb690",
+                        "on-tertiary-fixed-variant": "#723610",
+                        "on-secondary": "#ffffff",
+                        "outline": "#737780",
+                        "surface-container-highest": "#e2e2e7",
+                        "status-green": "#28a745",
+                        "status-yellow": "#ffc107",
+                        "status-red": "#dc3545"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "unit": "4px",
+                        "padding-card": "20px",
+                        "margin-page": "24px"
+                    },
+                    "fontFamily": {
+                        "data-tabular": ["Inter", "sans-serif"],
+                        "body-base": ["Inter", "sans-serif"],
+                        "h1": ["Inter", "sans-serif"],
+                        "label-sm": ["Inter", "sans-serif"],
+                        "body-bold": ["Inter", "sans-serif"],
+                        "section-title": ["Inter", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "data-tabular": ["13px", {"lineHeight": "18px", "fontWeight": "400"}],
+                        "body-base": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "h1": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-bold": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+                        "section-title": ["18px", {"lineHeight": "24px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Minimalist Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f0f5; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c3c6d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #737780; 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-base min-h-screen flex flex-col antialiased">
+<!-- TopAppBar -->
+<header class="bg-white dark:bg-slate-900 text-blue-900 dark:text-blue-400 font-inter text-sm antialiased w-full sticky top-0 border-b border-gray-200 dark:border-gray-800 z-50 flex justify-between items-center px-6 h-16">
+<div class="flex items-center gap-4">
+<span class="text-xl font-black text-[#003366] dark:text-blue-500 uppercase tracking-tight">RetanFactor</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined cursor-pointer active:opacity-80 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors p-2 rounded text-slate-600 dark:text-slate-400" data-icon="schedule">schedule</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-80 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors p-2 rounded text-slate-600 dark:text-slate-400" data-icon="sensors">sensors</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-80 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors p-2 rounded text-slate-600 dark:text-slate-400" data-icon="account_circle">account_circle</span>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<nav class="bg-slate-50 dark:bg-slate-950 text-[#003366] dark:text-blue-400 font-inter text-xs font-semibold uppercase tracking-wider border-r border-gray-200 dark:border-gray-800 w-64 flex flex-col pt-4 hidden md:flex h-[calc(100vh-64px)] sticky top-16 z-40 duration-200 ease-in-out">
+<div class="px-6 mb-6">
+<div class="flex items-center gap-3">
+<img alt="Company Logo" class="w-10 h-10 rounded bg-white border border-gray-200 object-contain p-1" src="https://lh3.googleusercontent.com/aida/ADBb0ujcgXCgLhIzn4gZG-9UhwUoUqqqH3_PrLCH9OdDksVeV1ICLQ8I5MLCwWAwUMWGt9VxBBQfOMCwaGuAmiSwLr0-x1mY6cyyp5-atOS0s4ySwDYGc0bz_jmCP8wnIdT30sFDrljpP8PqVp0CkW0klu6YsxXc-liVYQZ1hme3hsleLEjvrghW-DdV3KiFHTyYLQrd9Tf7SgV0WpeKyGYt5q2wti6RCemOs29TCKsqzecLgeg-J00kRMtPJ-_okq4tYwKhBiTBKA"/>
+<div>
+<div class="text-on-background font-body-bold text-sm capitalize">Plant Ops</div>
+<div class="text-outline text-xs capitalize">Sector A-12</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col flex-1 gap-1">
+<a class="bg-white dark:bg-slate-900 text-[#003366] dark:text-blue-400 border-l-4 border-[#003366] dark:border-blue-500 flex items-center px-4 py-3 shadow-sm hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#003366] dark:hover:text-blue-300 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="analytics">analytics</span>
+                    Recruitment Report
+                </a>
+<a class="text-slate-500 dark:text-slate-400 flex items-center px-4 py-3 border-l-4 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#003366] dark:hover:text-blue-300 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="app_registration">app_registration</span>
+                    Factor Registration
+                </a>
+<a class="text-slate-500 dark:text-slate-400 flex items-center px-4 py-3 border-l-4 border-transparent hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#003366] dark:hover:text-blue-300 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3 text-lg" data-icon="history_edu">history_edu</span>
+                    Factor History
+                </a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 p-margin-page overflow-y-auto bg-background">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-stack-md gap-4">
+<div>
+<h1 class="font-h1 text-h1 text-on-background mb-1">Relatório de Recurtimento</h1>
+<div class="flex items-center gap-4 text-on-surface-variant font-body-base text-body-base">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="factory">factory</span>
+<span>Estação ABC</span>
+</div>
+<div class="w-1 h-1 rounded-full bg-outline-variant"></div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+<span>24 Out 2023, 14:30</span>
+</div>
+</div>
+</div>
+<!-- Action Bar -->
+<div class="flex flex-wrap items-center gap-stack-sm">
+<button class="flex items-center gap-2 px-4 h-10 bg-surface-container-lowest border border-outline-variant text-primary rounded-DEFAULT hover:bg-surface-container-low transition-colors font-label-sm text-label-sm uppercase">
+<span class="material-symbols-outlined text-[18px]" data-icon="picture_as_pdf">picture_as_pdf</span>
+                        Exportar PDF
+                    </button>
+<button class="flex items-center gap-2 px-4 h-10 bg-surface-container-lowest border border-outline-variant text-primary rounded-DEFAULT hover:bg-surface-container-low transition-colors font-label-sm text-label-sm uppercase">
+<span class="material-symbols-outlined text-[18px]" data-icon="table_view">table_view</span>
+                        Exportar Excel
+                    </button>
+<button class="flex items-center gap-2 px-6 h-10 bg-primary text-on-primary rounded-DEFAULT hover:bg-primary-container transition-colors font-label-sm text-label-sm uppercase shadow-sm">
+<span class="material-symbols-outlined text-[18px]" data-icon="refresh">refresh</span>
+                        Atualizar dados
+                    </button>
+</div>
+</div>
+<!-- Filters Section -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-DEFAULT p-padding-card mb-stack-md">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter">
+<!-- Column 1 -->
+<div class="space-y-stack-md">
+<div class="grid grid-cols-2 gap-stack-sm">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Data Inicial</label>
+<div class="relative">
+<input class="w-full h-10 px-3 border border-outline-variant rounded-DEFAULT bg-surface-container-lowest text-on-surface font-body-base text-body-base focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow" type="date" value="2023-10-01"/>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Data Final</label>
+<div class="relative">
+<input class="w-full h-10 px-3 border border-outline-variant rounded-DEFAULT bg-surface-container-lowest text-on-surface font-body-base text-body-base focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow" type="date" value="2023-10-24"/>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Lote de Produção</label>
+<input class="w-full h-10 px-3 border border-outline-variant rounded-DEFAULT bg-surface-container-lowest text-on-surface font-body-base text-body-base focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow" placeholder="Ex: L-2023-8492" type="text"/>
+</div>
+</div>
+<!-- Column 2 -->
+<div class="space-y-stack-md">
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Artigo</label>
+<div class="relative">
+<select class="w-full h-10 px-3 pr-10 appearance-none border border-outline-variant rounded-DEFAULT bg-surface-container-lowest text-on-surface font-body-base text-body-base focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow">
+<option value="">Todos os Artigos</option>
+<option value="a1">Couro Premium A1</option>
+<option value="b2">Nobuck Standard B2</option>
+<option value="c3">Camurça Sintética C3</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant pointer-events-none" data-icon="arrow_drop_down">arrow_drop_down</span>
+</div>
+</div>
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Cor</label>
+<input class="w-full h-10 px-3 border border-outline-variant rounded-DEFAULT bg-surface-container-lowest text-on-surface font-body-base text-body-base focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-shadow" placeholder="Ex: Preto, Marrom..." type="text"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-surface-variant rounded-DEFAULT flex flex-col h-[600px]">
+<!-- Table Header (AgGrid Style) -->
+<div class="flex bg-[#F1F3F5] border-b border-surface-variant rounded-t-DEFAULT">
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-24 border-r border-surface-variant flex items-center">Data</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant flex-1 min-w-[120px] border-r border-surface-variant flex items-center">Artigo</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-24 border-r border-surface-variant flex items-center">Cor</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-28 border-r border-surface-variant flex items-center">Lote</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-24 border-r border-surface-variant flex items-center">Cód Artigo</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-20 border-r border-surface-variant flex items-center justify-end text-right">m²</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-24 border-r border-surface-variant flex items-center justify-end text-right">Peso Lote</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-20 border-r border-surface-variant flex items-center justify-end text-right">kg/m²</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-20 border-r border-surface-variant flex items-center justify-end text-right">kg/ft²</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-24 border-r border-surface-variant flex items-center justify-end text-right">Fator Aplicado</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-28 border-r border-surface-variant flex items-center justify-end text-right">Peso Calculado</div>
+<div class="px-3 py-2 font-body-bold text-label-sm text-on-surface-variant w-24 flex items-center justify-end text-right">% Diferença</div>
+</div>
+<!-- Table Body -->
+<div class="flex-1 overflow-y-auto">
+<!-- Row 1 (Green <= 5%) -->
+<div class="flex border-b border-surface-variant h-[36px] hover:bg-surface-container-low transition-colors bg-white">
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">24/10/23</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface flex-1 min-w-[120px] border-r border-surface-variant flex items-center truncate">Couro Premium A1</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">Preto</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center truncate">L-23-1049</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">ART-001</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">450.5</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">1250.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">2.77</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">0.26</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">1.05</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center justify-end text-right">1280.5</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-white w-24 flex items-center justify-end text-right bg-[#28a745]">-2.38%</div>
+</div>
+<!-- Row 2 (Yellow > 5% and <= 10%) -->
+<div class="flex border-b border-surface-variant h-[36px] hover:bg-surface-container-low transition-colors bg-[#f9f9fe]">
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">24/10/23</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface flex-1 min-w-[120px] border-r border-surface-variant flex items-center truncate">Nobuck Standard B2</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">Marrom</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center truncate">L-23-1050</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">ART-042</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">320.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">890.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">2.78</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">0.26</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">1.10</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center justify-end text-right">820.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 flex items-center justify-end text-right bg-[#ffc107]">8.54%</div>
+</div>
+<!-- Row 3 (Red > 10%) -->
+<div class="flex border-b border-surface-variant h-[36px] hover:bg-surface-container-low transition-colors bg-white">
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">23/10/23</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface flex-1 min-w-[120px] border-r border-surface-variant flex items-center truncate">Camurça Sintética</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">Bege</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center truncate">L-23-1045</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">ART-105</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">510.2</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">1450.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">2.84</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">0.26</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">0.95</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center justify-end text-right">1250.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-white w-24 flex items-center justify-end text-right bg-[#dc3545]">16.00%</div>
+</div>
+<!-- Row 4 -->
+<div class="flex border-b border-surface-variant h-[36px] hover:bg-surface-container-low transition-colors bg-[#f9f9fe]">
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">23/10/23</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface flex-1 min-w-[120px] border-r border-surface-variant flex items-center truncate">Couro Premium A1</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">Preto</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center truncate">L-23-1046</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center truncate">ART-001</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">445.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">1235.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">2.77</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-20 border-r border-surface-variant flex items-center justify-end text-right">0.26</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-24 border-r border-surface-variant flex items-center justify-end text-right">1.05</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-on-surface w-28 border-r border-surface-variant flex items-center justify-end text-right">1245.0</div>
+<div class="px-3 py-1 font-data-tabular text-data-tabular text-white w-24 flex items-center justify-end text-right bg-[#28a745]">-0.80%</div>
+</div>
+</div>
+<!-- Table Footer Summary -->
+<div class="bg-surface-container border-t border-surface-variant p-3 flex justify-between items-center rounded-b-DEFAULT">
+<div class="font-body-bold text-body-bold text-on-surface-variant">
+                        Total de linhas: <span class="text-on-surface">248</span>
+</div>
+<div class="font-body-bold text-body-bold text-on-surface-variant flex items-center gap-2">
+                        Média % diferença: 
+                        <span class="inline-flex items-center justify-center px-2 py-1 rounded bg-[#28a745] text-white text-xs">
+                            3,2%
+                        </span>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
