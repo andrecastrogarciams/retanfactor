@@ -22,7 +22,8 @@ SQL_RELATORIO = """
         COUROS        AS m2,
         PESO          AS peso_lote
     FROM USU_VBI_OPREC_V2
-    WHERE DATA BETWEEN :data_inicio AND :data_fim
+    WHERE DATA BETWEEN TO_DATE(:data_inicio, 'YYYY-MM-DD')
+                   AND TO_DATE(:data_fim,    'YYYY-MM-DD')
       AND (:lote      IS NULL OR NF1    = :lote)
       AND (:artigo    IS NULL OR DESPRO = :artigo)
       AND (:cor       IS NULL OR DESDER = :cor)
