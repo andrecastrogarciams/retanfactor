@@ -14,25 +14,25 @@ logger = logging.getLogger(__name__)
 
 SQL_RELATORIO = """
     SELECT
-        TRUNC(data_recurtimento) AS data_recurtimento,
-        artigo,
-        cor,
-        lote_fabricacao,
-        codigo_artigo,
-        m2,
-        peso_lote
+        TRUNC(DATA)   AS data_recurtimento,
+        DESPRO        AS artigo,
+        DESDER        AS cor,
+        NF1           AS lote_fabricacao,
+        CODPRO        AS codigo_artigo,
+        COUROS        AS m2,
+        PESO          AS peso_lote
     FROM USU_VBI_OPREC_V2
-    WHERE data_recurtimento BETWEEN :data_inicio AND :data_fim
-      AND (:lote      IS NULL OR lote_fabricacao = :lote)
-      AND (:artigo    IS NULL OR artigo = :artigo)
-      AND (:cor       IS NULL OR cor = :cor)
-    ORDER BY data_recurtimento, artigo, lote_fabricacao
+    WHERE DATA BETWEEN :data_inicio AND :data_fim
+      AND (:lote      IS NULL OR NF1    = :lote)
+      AND (:artigo    IS NULL OR DESPRO = :artigo)
+      AND (:cor       IS NULL OR DESDER = :cor)
+    ORDER BY DATA, DESPRO, NF1
 """
 
 SQL_ARTIGOS = """
-    SELECT codigo_artigo, descricao_artigo
+    SELECT COD_ARTIGO AS codigo_artigo, ARTIGO AS descricao_artigo
     FROM USU_VBI_ARTIGOS_SEMI_NOA
-    ORDER BY descricao_artigo
+    ORDER BY ARTIGO
 """
 
 
