@@ -19,7 +19,7 @@ SQL_RELATORIO = """
         DESDER        AS cor,
         NF1           AS lote_fabricacao,
         CODPRO        AS codigo_artigo,
-        COUROS        AS m2,
+        M2            AS m2,
         PESO          AS peso_lote
     FROM USU_VBI_OPREC_V2
     WHERE DATA BETWEEN TO_DATE(:data_inicio, 'YYYY-MM-DD')
