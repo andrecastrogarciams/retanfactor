@@ -19,7 +19,7 @@ from services.factor_service import criar_fator
 
 logger = logging.getLogger(__name__)
 
-PAGE_TITLE = "Cadastro de Fatores"
+PAGE_TITLE = "Cadastro de Fator de Recurtimento"
 PAGE_ICON = "📝"
 
 st.set_page_config(page_title=PAGE_TITLE, page_icon=PAGE_ICON, layout="centered")
@@ -45,38 +45,44 @@ def _carregar_artigos() -> list[dict]:
 
 
 # ---------------------------------------------------------------------------
-# Validação de formulário — função pura, testável
+# Helpers de UI e Validação
 # ---------------------------------------------------------------------------
+
+def _render_erro_inline(campo: str):
+    """Exibe mensagem de erro abaixo do campo se existir no session_state."""
+    erros = st.session_state.get("form_errors", {})
+    if campo in erros:
+        st.markdown(
+            f'<p style="color:#dc3545;font-size:12px;margin-top:-15px;margin-bottom:15px;">'
+            f'⚠ {erros[campo]}</p>',
+            unsafe_allow_html=True
+        )
+
 
 def validar_formulario(
     codigo_artigo: str,
-    descricao_artigo: str,
     fator: Optional[float],
     data_inicio: Optional[date],
     data_fim: Optional[date],
-) -> list[str]:
+) -> dict[str, str]:
     """
-    Valida os campos do formulário antes de acionar o serviço.
-    Retorna lista de mensagens de erro (vazia = formulário válido).
+    Valida os campos do formulário e retorna dicionário de erros por campo.
     """
-    erros = []
+    erros = {}
 
     if not codigo_artigo or not codigo_artigo.strip():
-        erros.append("Selecione um artigo.")
-
-    if not descricao_artigo or not descricao_artigo.strip():
-        erros.append("Descrição do artigo não pode estar vazia.")
+        erros["codigo_artigo"] = "Selecione um artigo."
 
     if fator is None:
-        erros.append("Informe o fator.")
+        erros["fator"] = "Informe o fator."
     elif fator <= 0:
-        erros.append("O fator deve ser maior que zero. (PRD Story 2.1 AC4)")
+        erros["fator"] = "O fator deve ser maior que zero."
 
     if data_inicio is None:
-        erros.append("Data de início da vigência é obrigatória.")
+        erros["data_inicio"] = "Data de início é obrigatória."
 
     if data_inicio and data_fim and data_fim <= data_inicio:
-        erros.append("Data de fim da vigência deve ser posterior à data de início.")
+        erros["data_fim"] = "Deve ser posterior à data de início."
 
     return erros
 
@@ -100,15 +106,9 @@ def construir_fator_artigo(
     )
 
 
-# ---------------------------------------------------------------------------
-# Renderização do formulário
-# ---------------------------------------------------------------------------
-
 def _render_seletor_artigo(artigos: list[dict]) -> tuple[str, str]:
     """
-    Renderiza seletor de artigo.
-    Se Oracle disponível: selectbox pesquisável com lista real.
-    Se Oracle indisponível: campos de texto manuais com aviso.
+    Renderiza seletor de artigo (Story 4.3 AC3).
     """
     if artigos:
         opcoes = {
@@ -116,11 +116,11 @@ def _render_seletor_artigo(artigos: list[dict]) -> tuple[str, str]:
             for a in artigos
         }
         selecao = st.selectbox(
-            "Artigo *",
+            "Código do artigo",
             options=list(opcoes.keys()),
             index=None,
-            placeholder="Selecione ou pesquise um artigo...",
-            help="Lista carregada da view Oracle USU_VBI_ARTIGOS_SEMI_NOA",
+            placeholder="Selecione ou pesquise...",
+            key="f_codigo_artigo_sel",
         )
         if selecao:
             artigo = opcoes[selecao]
@@ -128,23 +128,25 @@ def _render_seletor_artigo(artigos: list[dict]) -> tuple[str, str]:
         return "", ""
     else:
         st.warning(
-            "⚠️ Lista de artigos Oracle indisponível. "
-            "Preencha o código e a descrição manualmente.",
+            "⚠️ Lista de artigos Oracle indisponível.",
             icon="⚠️",
         )
-        codigo = st.text_input("Código do artigo *", placeholder="ex: ART001")
-        descricao = st.text_input("Descrição do artigo *", placeholder="ex: Napa Bovina")
+        codigo = st.text_input("Código do artigo", placeholder="ex: ART001", key="f_codigo_manual")
+        descricao = st.text_input("Descrição do artigo", placeholder="ex: Napa Bovina", key="f_desc_manual")
         return codigo.strip(), descricao.strip()
 
 
 def _limpar_formulario() -> None:
-    """Limpa o estado do formulário após salvar com sucesso."""
-    for key in [
-        "form_fator", "form_data_inicio", "form_data_fim",
-        "form_observacao", "form_artigo",
-    ]:
+    """Limpa o estado do formulário e erros."""
+    chaves = [
+        "f_codigo_artigo_sel", "f_codigo_manual", "f_desc_manual",
+        "f_fator", "f_data_inicio", "f_data_fim", "f_observacao",
+        "form_errors"
+    ]
+    for key in chaves:
         if key in st.session_state:
             del st.session_state[key]
+    st.rerun()
 
 
 # ---------------------------------------------------------------------------
@@ -155,103 +157,110 @@ def main() -> None:
     inject_global_css()
     render_page_header(PAGE_TITLE)
     render_env_banner()
-    st.markdown(
-        "Cadastre um novo fator de cálculo por código do artigo. "
-        "A vigência define o período em que o fator será aplicado no relatório."
-    )
 
     artigos = _carregar_artigos()
 
-    st.divider()
+    # Centralização do formulário (Story 4.3 AC2)
+    _, col_form, _ = st.columns([1, 2, 1])
 
-    # ------------------------------------------------------------------
-    # Formulário
-    # ------------------------------------------------------------------
-    with st.form("form_cadastro_fator", clear_on_submit=False):
-        st.subheader("Dados do Fator")
+    with col_form:
+        # st.form já possui o estilo de card via styles.css [data-testid="stForm"]
+        with st.form("form_cadastro_fator", clear_on_submit=False):
+            
+            # Artigo (AC 3)
+            codigo_artigo, descricao_artigo = _render_seletor_artigo(artigos)
+            _render_erro_inline("codigo_artigo")
 
-        # Artigo (PRD Story 2.1 AC2-3)
-        codigo_artigo, descricao_artigo = _render_seletor_artigo(artigos)
+            # Descrição (AC 4 — read-only)
+            st.text_input(
+                "Descrição do artigo",
+                value=descricao_artigo,
+                disabled=True,
+                help="Preenchimento automático baseado no código selecionado.",
+            )
 
-        st.divider()
-
-        # Fator (PRD Story 2.1 AC4)
-        col_fator, col_vazio = st.columns([1, 2])
-        with col_fator:
+            # Fator (AC 3)
             fator = st.number_input(
-                "Fator *",
-                min_value=0.0001,
-                max_value=99.9999,
+                "Fator",
+                min_value=0.001,
+                max_value=99.999,
                 value=None,
-                step=0.0001,
-                format="%.4f",
-                placeholder="ex: 1.2500",
-                help="Deve ser maior que zero. Usado na fórmula: m² × 10,764 × fator × 0,092903",
+                step=0.001,
+                format="%.3f",
+                placeholder="ex: 1.250",
+                key="f_fator",
+            )
+            _render_erro_inline("fator")
+
+            # Vigência (AC 3)
+            col_ini, col_fim = st.columns(2)
+            with col_ini:
+                data_inicio = st.date_input(
+                    "Data início vigência",
+                    value=None,
+                    format="DD/MM/YYYY",
+                    key="f_data_inicio",
+                )
+                _render_erro_inline("data_inicio")
+            with col_fim:
+                data_fim = st.date_input(
+                    "Data fim vigência (Opcional)",
+                    value=None,
+                    format="DD/MM/YYYY",
+                    key="f_data_fim",
+                )
+                _render_erro_inline("data_fim")
+
+            # Observação (AC 3)
+            observacao = st.text_area(
+                "Observação",
+                value="",
+                max_chars=500,
+                placeholder="Informações adicionais (opcional).",
+                height=100,
+                key="f_observacao",
             )
 
-        st.divider()
+            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
 
-        # Vigência (PRD Story 2.1 AC1, AC5)
-        st.markdown("**Vigência**")
-        col_inicio, col_fim = st.columns(2)
-        with col_inicio:
-            data_inicio = st.date_input(
-                "Data início *",
-                value=None,
-                format="DD/MM/YYYY",
-                help="Obrigatório. Primeiro dia de validade do fator.",
-            )
-        with col_fim:
-            data_fim = st.date_input(
-                "Data fim",
-                value=None,
-                format="DD/MM/YYYY",
-                help="Opcional. Deixe em branco para vigência em aberto.",
-            )
-
-        # Observação (PRD Story 2.1 AC1 — campo disponível)
-        observacao = st.text_area(
-            "Observação",
-            value="",
-            max_chars=500,
-            placeholder="Informações adicionais sobre este fator (opcional).",
-            height=80,
-        )
-
-        st.divider()
-
-        # Botão de submissão
-        submitted = st.form_submit_button(
-            "💾 Salvar fator",
-            type="primary",
-            use_container_width=True,
-        )
+            # Botões (AC 5 e 6)
+            col_cancel, col_save = st.columns(2)
+            with col_cancel:
+                # O style secundário é aplicado via CSS global para botões não-primários
+                btn_cancel = st.form_submit_button("Cancelar/Limpar", use_container_width=True)
+            with col_save:
+                btn_save = st.form_submit_button("💾 Salvar Fator", type="primary", use_container_width=True)
 
     # ------------------------------------------------------------------
-    # Processamento após submissão
+    # Processamento
     # ------------------------------------------------------------------
-    if not submitted:
+    if btn_cancel:
+        _limpar_formulario()
+
+    if not btn_save:
         return
 
-    # Converter date_input (pode retornar date ou None)
+    # Converter date_input
     data_inicio_val = data_inicio if isinstance(data_inicio, date) else None
     data_fim_val = data_fim if isinstance(data_fim, date) else None
 
-    # Validação de formulário (PRD Story 2.2)
+    # Validação (PRD Story 2.2 | Story 4.3 AC7)
     erros = validar_formulario(
         codigo_artigo=codigo_artigo,
-        descricao_artigo=descricao_artigo,
         fator=fator,
         data_inicio=data_inicio_val,
         data_fim=data_fim_val,
     )
 
     if erros:
-        for erro in erros:
-            st.error(f"❌ {erro}")
-        return
+        st.session_state["form_errors"] = erros
+        st.rerun()
 
-    # Persistência (PRD Story 2.1 AC6-8)
+    # Se chegou aqui, remove erros antigos
+    if "form_errors" in st.session_state:
+        del st.session_state["form_errors"]
+
+    # Persistência
     novo_fator = construir_fator_artigo(
         codigo_artigo=codigo_artigo,
         descricao_artigo=descricao_artigo,
@@ -265,37 +274,19 @@ def main() -> None:
         conn = get_sqlite_conn()
         new_id = criar_fator(conn, novo_fator, ESTACAO)
 
-        vigencia_txt = (
-            f"{data_inicio_val.strftime('%d/%m/%Y')} → "
-            + (data_fim_val.strftime("%d/%m/%Y") if data_fim_val else "em aberto")
-        )
-        st.success(
-            f"✅ Fator cadastrado com sucesso!\n\n"
-            f"**ID:** {new_id} | **Artigo:** {codigo_artigo} | "
-            f"**Fator:** {fator:.4f} | **Vigência:** {vigencia_txt}",
-        )
-        st.info(
-            "O relatório já reflete este fator. "
-            "Consulte o **Histórico de Fatores** para visualizar o registro.",
-            icon="ℹ️",
-        )
+        st.success(f"✅ Fator cadastrado com sucesso! ID: {new_id}")
+        st.balloons()
+        # Não limpamos automaticamente para o usuário ver o sucesso, 
+        # mas ele pode clicar em Cancelar/Limpar se quiser novo cadastro.
 
     except ValueError as exc:
-        # Sobreposição de vigência ou validação de negócio (PRD Story 2.2 AC3)
-        st.error(f"❌ {exc}")
-        logger.warning(
-            "CADASTRO_REJEITADO | estacao=%s | artigo=%s | erro=%s",
-            ESTACAO, codigo_artigo, str(exc),
-        )
+        # Sobreposição de vigência
+        st.session_state["form_errors"] = {"data_inicio": str(exc)}
+        st.rerun()
 
     except Exception as exc:
-        st.error(
-            f"❌ Erro inesperado ao salvar o fator. Tente novamente.\n\n`{exc}`"
-        )
-        logger.error(
-            "ERRO_CADASTRO | estacao=%s | artigo=%s | erro=%s",
-            ESTACAO, codigo_artigo, str(exc),
-        )
+        st.error(f"❌ Erro inesperado: {exc}")
+        logger.error("ERRO_CADASTRO | erro=%s", str(exc))
 
 
 if __name__ == "__main__":

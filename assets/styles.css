@@ -137,6 +137,23 @@ section[data-testid="stSidebar"] {
     border-radius: var(--radius-card) !important;
 }
 
+/* ── Formulário: card estilizado (Story 4.3 AC2) ─── */
+[data-testid="stForm"] {
+    border: 1px solid #dee2e6 !important;
+    border-radius: 4px !important;
+    padding: 20px !important;
+    background: #ffffff !important;
+}
+
+/* ── Campo read-only (descrição artigo — AC4) ──────── */
+.stTextInput input:disabled,
+.stTextInput input[disabled] {
+    background-color: #eeedf2 !important;
+    color: #43474f !important;
+    cursor: not-allowed !important;
+    border-color: #dee2e6 !important;
+}
+
 /* ── AgGrid: header e zebra ──────────────────────── */
 .ag-theme-streamlit .ag-header {
     background-color: #f1f3f5 !important;

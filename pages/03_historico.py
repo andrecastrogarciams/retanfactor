@@ -9,6 +9,7 @@ from typing import Optional
 
 import pandas as pd
 import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, JsCode
 
 import sys
 from pathlib import Path
@@ -38,26 +39,19 @@ _COLUNAS_HISTORICO = {
     "fator":                "Fator",
     "data_inicio_vigencia": "Início Vigência",
     "data_fim_vigencia":    "Fim Vigência",
-    "observacao":           "Observação",
     "status_display":       "Status",
+    "observacao":           "Observação",
     "motivo_cancelamento":  "Motivo Cancelamento",
     "created_at":           "Criado em",
     "cancelled_at":         "Cancelado em",
 }
 
-_COR_ATIVO = "#d4edda"
-_COR_CANCELADO = "#f8d7da"
-
-
 # ---------------------------------------------------------------------------
-# Formatação — funções puras, testáveis
+# Formatação e Helpers
 # ---------------------------------------------------------------------------
 
 def formatar_status(fator: FatorArtigo) -> str:
-    """
-    Retorna texto de status com indicador visual.
-    Cobre vigência aberta e cancelamento (PRD Story 2.3 AC6).
-    """
+    """Retorna texto de status com indicador visual."""
     if fator.status == "cancelado":
         return "🔴 Cancelado"
     if fator.data_fim_vigencia is None:
@@ -75,7 +69,6 @@ def formatar_vigencia(fator: FatorArtigo) -> str:
 def fatores_para_dataframe(fatores: list[FatorArtigo]) -> pd.DataFrame:
     """
     Converte lista de FatorArtigo em DataFrame formatado para exibição.
-    Inclui coluna status_display com indicador visual (PRD Story 2.3 AC6).
     """
     if not fatores:
         return pd.DataFrame(columns=list(_COLUNAS_HISTORICO.values()))
@@ -89,8 +82,8 @@ def fatores_para_dataframe(fatores: list[FatorArtigo]) -> pd.DataFrame:
             "fator":                f.fator,
             "data_inicio_vigencia": f.data_inicio_vigencia,
             "data_fim_vigencia":    f.data_fim_vigencia or "em aberto",
-            "observacao":           f.observacao or "",
             "status_display":       formatar_status(f),
+            "observacao":           f.observacao or "",
             "motivo_cancelamento":  f.motivo_cancelamento or "",
             "created_at":           f.created_at or "",
             "cancelled_at":         f.cancelled_at or "",
@@ -160,225 +153,191 @@ def validar_cancelamento(
 
 
 # ---------------------------------------------------------------------------
+# Modais de Ação (st.dialog) — Story 4.4 AC6
+# ---------------------------------------------------------------------------
+
+@st.dialog("Confirmar Inativação")
+def modal_inativacao(fator: FatorArtigo, conn):
+    st.warning(f"Você está prestes a inativar o fator ID {fator.id} para o artigo {fator.codigo_artigo}.")
+    motivo = st.text_area("Motivo da inativação *", placeholder="Informe o motivo (obrigatório)", height=100)
+    
+    col_cancel, col_confirm = st.columns(2)
+    with col_cancel:
+        if st.button("Cancelar Inativação", use_container_width=True):
+            st.rerun()
+    with col_confirm:
+        if st.button("Confirmar Inativação", type="primary", use_container_width=True):
+            erros = validar_cancelamento(fator.id, motivo, fator)
+            if erros:
+                for e in erros:
+                    st.error(e)
+            else:
+                try:
+                    cancelar_fator(conn, fator.id, motivo.strip(), ESTACAO)
+                    st.success("Fator inativado com sucesso!")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Erro ao inativar: {exc}")
+
+
+@st.dialog("Duplicar Fator")
+def modal_duplicacao(fator: FatorArtigo, conn):
+    st.info(f"Duplicando registro ID {fator.id} ({fator.codigo_artigo}).")
+    st.markdown(f"**Artigo:** {fator.descricao_artigo}")
+    st.markdown(f"**Fator:** {fator.fator:.4f}")
+    
+    st.divider()
+    st.markdown("**Nova Vigência**")
+    col_ini, col_fim = st.columns(2)
+    with col_ini:
+        data_inicio = st.date_input("Início *", value=None, format="DD/MM/YYYY")
+    with col_fim:
+        data_fim = st.date_input("Fim (Opcional)", value=None, format="DD/MM/YYYY")
+        
+    col_cancel, col_confirm = st.columns(2)
+    with col_cancel:
+        if st.button("Cancelar Duplicação", use_container_width=True):
+            st.rerun()
+    with col_confirm:
+        if st.button("Confirmar Duplicação", type="primary", use_container_width=True):
+            erros = validar_duplicacao(fator.id, data_inicio, data_fim, fator)
+            if erros:
+                for e in erros:
+                    st.error(e)
+            else:
+                try:
+                    new_id = duplicar_fator(
+                        conn, 
+                        fator.id, 
+                        data_inicio.strftime("%Y-%m-%d"), 
+                        ESTACAO,
+                        data_fim.strftime("%Y-%m-%d") if data_fim else None
+                    )
+                    st.success(f"Fator duplicado! Novo ID: {new_id}")
+                    st.rerun()
+                except Exception as exc:
+                    st.error(f"Erro ao duplicar: {exc}")
+
+
+# ---------------------------------------------------------------------------
 # Componentes de UI
 # ---------------------------------------------------------------------------
 
 def _render_filtros() -> dict:
-    """Filtros no sidebar (PRD Story 2.3 AC2-4)."""
-    st.sidebar.header("Filtros")
+    """Filtros horizontais (PRD Story 2.3 | Story 4.4 AC2)."""
+    col1, col2, col3, col4, col5 = st.columns([2, 1.5, 1.5, 1.5, 1])
 
-    codigo = st.sidebar.text_input(
-        "Código do artigo",
-        placeholder="ex: ART001",
-    ).strip() or None
+    with col1:
+        codigo = st.text_input("Código do artigo", placeholder="ex: ART001").strip() or None
+    with col2:
+        data_inicio = st.date_input("Início vigência", value=None, format="DD/MM/YYYY")
+    with col3:
+        data_fim = st.date_input("Fim vigência", value=None, format="DD/MM/YYYY")
+    with col4:
+        st.write("") # alinhamento
+        apenas_vigentes = st.checkbox("Somente vigentes", value=False)
+    with col5:
+        st.write("") # alinhamento
+        btn_aplicar = st.button("Aplicar", type="primary", use_container_width=True)
 
-    apenas_vigentes = st.sidebar.checkbox("Somente vigentes", value=False)
-
-    st.sidebar.markdown("**Período de vigência**")
-    data_inicio_filtro = st.sidebar.date_input(
-        "Início a partir de",
-        value=None,
-        format="DD/MM/YYYY",
-    )
-    data_fim_filtro = st.sidebar.date_input(
-        "Fim até",
-        value=None,
-        format="DD/MM/YYYY",
-    )
+    # Botão Limpar (Story 4.4 AC7)
+    if st.sidebar.button("Limpar Filtros", type="secondary", use_container_width=True):
+        st.rerun()
 
     return {
         "codigo_artigo":      codigo,
         "apenas_vigentes":    apenas_vigentes,
-        "data_inicio_filtro": data_inicio_filtro.strftime("%Y-%m-%d")
-                              if isinstance(data_inicio_filtro, date) else None,
-        "data_fim_filtro":    data_fim_filtro.strftime("%Y-%m-%d")
-                              if isinstance(data_fim_filtro, date) else None,
+        "data_inicio_filtro": data_inicio.strftime("%Y-%m-%d") if isinstance(data_inicio, date) else None,
+        "data_fim_filtro":    data_fim.strftime("%Y-%m-%d") if isinstance(data_fim, date) else None,
     }
 
 
-def _render_tabela(fatores: list[FatorArtigo]) -> None:
-    """Renderiza tabela de histórico com destaque por status."""
+def _build_grid_options(df: pd.DataFrame) -> dict:
+    gb = GridOptionsBuilder.from_dataframe(df)
+    
+    # Configurações padrão
+    gb.configure_default_column(resizable=True, sortable=True, filter=True)
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=20)
+    
+    # Badge de Status (Story 4.4 AC4)
+    cell_style_status = JsCode("""
+    function(params) {
+        if (params.value.includes('Ativo'))
+            return { backgroundColor: '#d5e3ff', color: '#1f477b', 
+                     borderRadius: '12px', padding: '2px 8px', 
+                     display: 'inline-block', fontWeight: '500', marginTop: '4px' };
+        return { backgroundColor: '#eeedf2', color: '#43474f', 
+                 borderRadius: '12px', padding: '2px 8px', 
+                 display: 'inline-block', fontWeight: '500', marginTop: '4px' };
+    }
+    """)
+    
+    # Colunas específicas usando os labels do DF (que veio de _COLUNAS_HISTORICO.values())
+    gb.configure_column("ID", width=80)
+    gb.configure_column("Cód. Artigo", width=120)
+    gb.configure_column("Artigo", width=200)
+    gb.configure_column("Fator", width=100, type=["numericColumn"], 
+                        valueFormatter="x.toFixed(4)", cellStyle={'textAlign': 'right'})
+    gb.configure_column("Início Vigência", width=120)
+    gb.configure_column("Fim Vigência", width=120)
+    gb.configure_column("Status", width=150, cellStyle=cell_style_status)
+    gb.configure_column("Observação", width=250)
+
+    # Seleção de linha para disparar as ações
+    gb.configure_selection(selection_mode="single", use_checkbox=False)
+    
+    grid_options = gb.build()
+    grid_options["rowHeight"] = 36
+    grid_options["headerHeight"] = 40
+    
+    return grid_options
+
+
+def _render_tabela(fatores: list[FatorArtigo], conn) -> None:
+    """Renderiza tabela AgGrid (Story 4.4 AC3-5)."""
     df = fatores_para_dataframe(fatores)
 
     if df.empty:
-        st.info("Nenhum registro encontrado para os filtros selecionados.")
+        st.info("Nenhum registro encontrado.")
         return
 
-    total = len(fatores)
-    ativos = sum(1 for f in fatores if f.status == "ativo")
-    cancelados = total - ativos
+    grid_options = _build_grid_options(df)
+    
+    st.markdown(
+        "<p style='font-size:12px;color:#737780;margin-bottom:8px;'>"
+        "Selecione uma linha para duplicar ou inativar o fator.</p>", 
+        unsafe_allow_html=True
+    )
 
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total de registros", total)
-    col2.metric("🟢 Ativos", ativos)
-    col3.metric("🔴 Cancelados", cancelados)
-
-    st.divider()
-
-    # Highlight por status
-    def _highlight(row):
-        if "Cancelado" in str(row.get("Status", "")):
-            return [f"background-color: {_COR_CANCELADO}"] * len(row)
-        return [f"background-color: {_COR_ATIVO}"] * len(row)
-
-    st.dataframe(
-        df.style.apply(_highlight, axis=1),
-        use_container_width=True,
-        hide_index=True,
+    grid_response = AgGrid(
+        df,
+        gridOptions=grid_options,
+        update_mode=GridUpdateMode.SELECTION_CHANGED,
+        allow_unsafe_jscode=True,
+        theme="streamlit",
         height=400,
+        fit_columns_on_grid_load=True,
     )
 
-
-def _render_form_duplicacao(fatores: list[FatorArtigo], conn) -> None:
-    """Formulário de duplicação (PRD Story 2.4 AC1-2)."""
-    st.subheader("📋 Duplicar Fator")
-    st.caption(
-        "Reutiliza código, artigo, fator e observação. "
-        "Informe a nova vigência."
-    )
-
-    ativos = [f for f in fatores if f.status == "ativo"]
-    if not ativos:
-        st.info("Não há fatores ativos para duplicar.")
-        return
-
-    opcoes_dup = {
-        f"ID {f.id} — {f.codigo_artigo} | fator={f.fator:.4f} | "
-        f"{f.data_inicio_vigencia}→{f.data_fim_vigencia or 'aberto'}": f.id
-        for f in ativos
-    }
-
-    with st.form("form_duplicacao"):
-        selecao = st.selectbox(
-            "Registro a duplicar *",
-            options=list(opcoes_dup.keys()),
-            index=None,
-            placeholder="Selecione...",
-        )
-        fator_id_dup = opcoes_dup[selecao] if selecao else None
-
-        # Pré-visualização do registro selecionado (PRD Story 2.4 AC1)
-        if fator_id_dup:
-            origem = next((f for f in ativos if f.id == fator_id_dup), None)
-            if origem:
-                st.info(
-                    f"**Artigo:** {origem.descricao_artigo} | "
-                    f"**Fator:** {origem.fator:.4f} | "
-                    f"**Observação:** {origem.observacao or '—'}",
-                    icon="ℹ️",
-                )
-
-        st.markdown("**Nova vigência**")
-        col_inicio, col_fim = st.columns(2)
-        with col_inicio:
-            data_inicio_dup = st.date_input(
-                "Início *", value=None, format="DD/MM/YYYY", key="dup_inicio"
-            )
-        with col_fim:
-            data_fim_dup = st.date_input(
-                "Fim", value=None, format="DD/MM/YYYY", key="dup_fim",
-                help="Deixe em branco para vigência em aberto."
-            )
-
-        submitted_dup = st.form_submit_button(
-            "📋 Duplicar", type="primary", use_container_width=True
-        )
-
-    if not submitted_dup:
-        return
-
-    fator_origem = buscar_fator(conn, fator_id_dup) if fator_id_dup else None
-    data_inicio_val = data_inicio_dup if isinstance(data_inicio_dup, date) else None
-    data_fim_val = data_fim_dup if isinstance(data_fim_dup, date) else None
-
-    erros = validar_duplicacao(fator_id_dup, data_inicio_val, data_fim_val, fator_origem)
-    if erros:
-        for e in erros:
-            st.error(f"❌ {e}")
-        return
-
-    try:
-        new_id = duplicar_fator(
-            conn,
-            fator_id=fator_id_dup,
-            data_inicio_nova=data_inicio_val.strftime("%Y-%m-%d"),
-            estacao=ESTACAO,
-            data_fim_nova=data_fim_val.strftime("%Y-%m-%d") if data_fim_val else None,
-        )
-        st.success(
-            f"✅ Fator duplicado com sucesso! Novo ID: **{new_id}**. "
-            "Recarregue a página para ver o novo registro.",
-        )
-        st.rerun()
-    except ValueError as exc:
-        st.error(f"❌ {exc}")
-    except Exception as exc:
-        logger.error("ERRO_DUPLICACAO | estacao=%s | id=%s | erro=%s",
-                     ESTACAO, fator_id_dup, str(exc))
-        st.error(f"❌ Erro inesperado ao duplicar.\n\n`{exc}`")
-
-
-def _render_form_cancelamento(fatores: list[FatorArtigo], conn) -> None:
-    """Formulário de cancelamento/inativação (PRD Story 2.4 AC3-8)."""
-    st.subheader("🚫 Inativar Fator")
-    st.caption("O fator cancelado deixa de ser aplicado nos cálculos futuros.")
-
-    ativos = [f for f in fatores if f.status == "ativo"]
-    if not ativos:
-        st.info("Não há fatores ativos para cancelar.")
-        return
-
-    opcoes_can = {
-        f"ID {f.id} — {f.codigo_artigo} | fator={f.fator:.4f} | "
-        f"{f.data_inicio_vigencia}→{f.data_fim_vigencia or 'aberto'}": f.id
-        for f in ativos
-    }
-
-    with st.form("form_cancelamento"):
-        selecao = st.selectbox(
-            "Registro a inativar *",
-            options=list(opcoes_can.keys()),
-            index=None,
-            placeholder="Selecione...",
-        )
-        fator_id_can = opcoes_can[selecao] if selecao else None
-
-        motivo = st.text_area(
-            "Motivo de cancelamento *",
-            value="",
-            max_chars=500,
-            placeholder="Descreva o motivo da inativação...",
-            height=80,
-            help="Obrigatório. Será registrado permanentemente.",
-        )
-
-        submitted_can = st.form_submit_button(
-            "🚫 Inativar", type="primary", use_container_width=True
-        )
-
-    if not submitted_can:
-        return
-
-    fator_origem = buscar_fator(conn, fator_id_can) if fator_id_can else None
-    erros = validar_cancelamento(fator_id_can, motivo, fator_origem)
-    if erros:
-        for e in erros:
-            st.error(f"❌ {e}")
-        return
-
-    try:
-        cancelar_fator(conn, fator_id=fator_id_can, motivo=motivo, estacao=ESTACAO)
-        st.success(
-            f"✅ Fator ID **{fator_id_can}** inativado. "
-            "O relatório já reflete esta alteração."
-        )
-        st.rerun()
-    except ValueError as exc:
-        st.error(f"❌ {exc}")
-    except Exception as exc:
-        logger.error("ERRO_CANCELAMENTO | estacao=%s | id=%s | erro=%s",
-                     ESTACAO, fator_id_can, str(exc))
-        st.error(f"❌ Erro inesperado ao inativar.\n\n`{exc}`")
+    selected = grid_response.get("selected_rows")
+    if selected is not None and len(selected) > 0:
+        row = selected.iloc[0] if hasattr(selected, "iloc") else selected[0]
+        fator_id = int(row["ID"])
+        fator_obj = next((f for f in fatores if f.id == fator_id), None)
+        
+        if fator_obj:
+            st.divider()
+            col_info, col_act1, col_act2 = st.columns([3, 1, 1])
+            with col_info:
+                st.markdown(f"**Selecionado:** ID {fator_id} — {fator_obj.codigo_artigo}")
+            
+            with col_act1:
+                if st.button("📋 Duplicar", use_container_width=True, disabled=fator_obj.status == 'cancelado'):
+                    modal_duplicacao(fator_obj, conn)
+            
+            with col_act2:
+                if st.button("🚫 Inativar", type="primary", use_container_width=True, disabled=fator_obj.status == 'cancelado'):
+                    modal_inativacao(fator_obj, conn)
 
 
 # ---------------------------------------------------------------------------
@@ -397,26 +356,30 @@ def main() -> None:
         conn = get_sqlite_conn()
         fatores = listar_fatores(conn, **filtros)
     except Exception as exc:
-        logger.error("ERRO_SQLITE_HISTORICO | estacao=%s | erro=%s", ESTACAO, str(exc))
-        st.error(
-            f"❌ Falha ao carregar o histórico de fatores. "
-            f"Verifique o banco de dados.\n\n`{exc}`"
-        )
+        logger.error("ERRO_SQLITE_HISTORICO | erro=%s", str(exc))
+        st.error(f"❌ Falha ao carregar o histórico: {exc}")
         return
 
+    # Métricas rápidas
+    total = len(fatores)
+    ativos = sum(1 for f in fatores if f.status == "ativo")
+    
+    st.markdown(
+        f"""
+        <div style="display:flex;gap:24px;margin-bottom:16px;">
+          <div><span style="font-size:12px;color:#43474f;">TOTAL</span><br>
+               <span style="font-size:20px;font-weight:700;">{total}</span></div>
+          <div><span style="font-size:12px;color:#43474f;">ATIVOS</span><br>
+               <span style="font-size:20px;font-weight:700;color:#1f477b;">{ativos}</span></div>
+          <div><span style="font-size:12px;color:#43474f;">INATIVOS</span><br>
+               <span style="font-size:20px;font-weight:700;color:#737780;">{total - ativos}</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
     # Tabela principal
-    _render_tabela(fatores)
-
-    st.divider()
-
-    # Ações por registro
-    col_dup, col_can = st.columns(2)
-
-    with col_dup:
-        _render_form_duplicacao(fatores, conn)
-
-    with col_can:
-        _render_form_cancelamento(fatores, conn)
+    _render_tabela(fatores, conn)
 
 
 if __name__ == "__main__":

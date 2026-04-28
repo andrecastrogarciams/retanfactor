@@ -39,59 +39,63 @@ def page():
 
 class TestValidarFormulario:
 
-    def _v(self, page, **kwargs) -> list[str]:
+    def _v(self, page, **kwargs) -> dict[str, str]:
         defaults = dict(
             codigo_artigo="ART001",
-            descricao_artigo="Artigo Teste",
             fator=1.25,
             data_inicio=date(2026, 1, 1),
             data_fim=None,
         )
         defaults.update(kwargs)
+        # Removido descricao_artigo pois agora é read-only e não validado
+        if "descricao_artigo" in defaults:
+            del defaults["descricao_artigo"]
         return page.validar_formulario(**defaults)
 
     def test_formulario_valido_retorna_vazio(self, page):
-        assert self._v(page) == []
+        assert self._v(page) == {}
 
     def test_vigencia_aberta_e_valida(self, page):
-        assert self._v(page, data_fim=None) == []
+        assert self._v(page, data_fim=None) == {}
 
     def test_vigencia_fechada_valida(self, page):
-        assert self._v(page, data_fim=date(2026, 6, 30)) == []
+        assert self._v(page, data_fim=date(2026, 6, 30)) == {}
 
     # Artigo
     def test_codigo_artigo_vazio(self, page):
         erros = self._v(page, codigo_artigo="")
-        assert any("artigo" in e.lower() for e in erros)
+        assert "codigo_artigo" in erros
+        assert "artigo" in erros["codigo_artigo"].lower()
 
     def test_codigo_artigo_espacos(self, page):
         erros = self._v(page, codigo_artigo="   ")
-        assert any("artigo" in e.lower() for e in erros)
-
-    def test_descricao_vazia(self, page):
-        erros = self._v(page, descricao_artigo="")
-        assert any("Descrição" in e for e in erros)
+        assert "codigo_artigo" in erros
+        assert "artigo" in erros["codigo_artigo"].lower()
 
     # Fator
     def test_fator_none(self, page):
         erros = self._v(page, fator=None)
-        assert any("fator" in e.lower() for e in erros)
+        assert "fator" in erros
+        assert "fator" in erros["fator"].lower()
 
     def test_fator_zero(self, page):
         erros = self._v(page, fator=0.0)
-        assert any("maior que zero" in e for e in erros)
+        assert "fator" in erros
+        assert "maior que zero" in erros["fator"].lower()
 
     def test_fator_negativo(self, page):
         erros = self._v(page, fator=-1.0)
-        assert any("maior que zero" in e for e in erros)
+        assert "fator" in erros
+        assert "maior que zero" in erros["fator"].lower()
 
     def test_fator_muito_pequeno_positivo_valido(self, page):
-        assert self._v(page, fator=0.0001) == []
+        assert self._v(page, fator=0.001) == {}
 
     # Data início
     def test_data_inicio_none(self, page):
         erros = self._v(page, data_inicio=None)
-        assert any("início" in e for e in erros)
+        assert "data_inicio" in erros
+        assert "início" in erros["data_inicio"].lower()
 
     # Data fim vs data início
     def test_data_fim_igual_a_inicio(self, page):
@@ -100,7 +104,8 @@ class TestValidarFormulario:
             data_inicio=date(2026, 6, 1),
             data_fim=date(2026, 6, 1),
         )
-        assert any("posterior" in e for e in erros)
+        assert "data_fim" in erros
+        assert "posterior" in erros["data_fim"].lower()
 
     def test_data_fim_anterior_a_inicio(self, page):
         erros = self._v(
@@ -108,19 +113,23 @@ class TestValidarFormulario:
             data_inicio=date(2026, 6, 1),
             data_fim=date(2026, 1, 1),
         )
-        assert any("posterior" in e for e in erros)
+        assert "data_fim" in erros
+        assert "posterior" in erros["data_fim"].lower()
 
     def test_data_fim_posterior_e_valida(self, page):
         assert self._v(
             page,
             data_inicio=date(2026, 1, 1),
             data_fim=date(2026, 12, 31),
-        ) == []
+        ) == {}
 
     # Múltiplos erros simultâneos
     def test_acumula_multiplos_erros(self, page):
         erros = self._v(page, codigo_artigo="", fator=None, data_inicio=None)
-        assert len(erros) >= 2
+        assert len(erros) >= 3
+        assert "codigo_artigo" in erros
+        assert "fator" in erros
+        assert "data_inicio" in erros
 
 
 # ---------------------------------------------------------------------------
