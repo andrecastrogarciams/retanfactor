@@ -1,7 +1,7 @@
 # Story 4.2 — Redesign: Página Relatório de Recurtimento
 
 **Epic:** Epic 4 — Design e UX das Páginas
-**Status:** Ready
+**Status:** Ready for Review
 **Estimativa:** L
 
 ## Descrição
@@ -71,14 +71,27 @@ with col2: data_fim = st.date_input("Data fim", ...)
 
 ## Tasks
 
-- [ ] Refatorar filtros de `pages/01_relatorio.py` para layout horizontal em colunas
-- [ ] Aplicar tema AgGrid: zebra, header cinza `#f1f3f5`, altura 36px, alinhamento numérico
-- [ ] Implementar `cellStyle` via `JsCode` para coloração da coluna `% diferença`
-- [ ] Estilizar card de resumo com borda, padding e radius do design system
-- [ ] Ajustar botões PDF/Excel para estilos primário/secundário
-- [ ] Adicionar `render_page_header("Relatório de Recurtimento")` no topo
-- [ ] Verificar que `inject_global_css()` é chamado na página
-- [ ] Atualizar testes afetados pela refatoração de layout
+- [x] Refatorar filtros de `pages/01_relatorio.py` para layout horizontal em colunas
+- [x] Aplicar tema AgGrid: zebra, header cinza `#f1f3f5`, altura 36px, alinhamento numérico
+- [x] Implementar `cellStyle` via `JsCode` para coloração da coluna `% diferença`
+- [x] Estilizar card de resumo com borda, padding e radius do design system
+- [x] Ajustar botões PDF/Excel para estilos primário/secundário
+- [x] Adicionar `render_page_header("Relatório de Recurtimento")` no topo
+- [x] Verificar que `inject_global_css()` é chamado na página
+- [x] Atualizar testes afetados pela refatoração de layout
+
+## Dev Agent Record
+
+### File List
+- `pages/01_relatorio.py` — modificado (filtros horizontais, AgGrid streamlit+36px, card resumo HTML, botões primário/secundário)
+- `docs/stories/story-4.2.md` — atualizado (checkboxes + registro)
+
+### Completion Notes
+- `cellStyle` JsCode para `% diferença` já existia com cores corretas — mantido sem alteração
+- Tema AgGrid alterado de `"alpine"` → `"streamlit"` para ativar o CSS do design system
+- `rowHeight=36` e `headerHeight=40` injetados via `grid_options` dict após `gb.build()`
+- Testes existentes testam apenas funções puras (`_rows_to_dataframe`, `_exportar_excel`) — sem regressões (242/242)
 
 ## Change Log
 - 2026-04-28: Story criada por @pm — Epic 4, redesign da página relatório
+- 2026-04-28: Implementada por @dev (Dex) — 242/242 testes passando, status: Ready for Review

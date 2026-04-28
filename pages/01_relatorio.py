@@ -177,6 +177,10 @@ def _build_aggrid_options(df: pd.DataFrame) -> dict:
     # Habilitar reordenação de colunas via drag
     grid_options["suppressMovableColumns"] = False
 
+    # Story 4.2: altura de linha 36px e header cinza #f1f3f5
+    grid_options["rowHeight"] = 36
+    grid_options["headerHeight"] = 40
+
     return grid_options
 
 
@@ -218,30 +222,26 @@ def _exportar_excel(df: pd.DataFrame) -> bytes:
 
 
 # ---------------------------------------------------------------------------
-# Filtros — painel lateral
+# Filtros — painel horizontal (Story 4.2 AC1)
 # ---------------------------------------------------------------------------
 
 def _render_filtros() -> dict:
-    """Renderiza filtros no sidebar e retorna os valores selecionados."""
-    st.sidebar.header("Filtros")
-
+    """Renderiza filtros em linha horizontal e retorna os valores selecionados."""
     hoje = date.today()
     primeiro_dia_mes = hoje.replace(day=1)
 
-    data_inicio = st.sidebar.date_input(
-        "Data início",
-        value=primeiro_dia_mes,
-        format="DD/MM/YYYY",
-    )
-    data_fim = st.sidebar.date_input(
-        "Data fim",
-        value=hoje,
-        format="DD/MM/YYYY",
-    )
+    col1, col2, col3, col4, col5 = st.columns([2, 2, 2, 2, 1])
 
-    lote = st.sidebar.text_input("Lote de fabricação", value="").strip() or None
-    artigo = st.sidebar.text_input("Artigo", value="").strip() or None
-    cor = st.sidebar.text_input("Cor", value="").strip() or None
+    with col1:
+        data_inicio = st.date_input("Data início", value=primeiro_dia_mes, format="DD/MM/YYYY")
+    with col2:
+        data_fim = st.date_input("Data fim", value=hoje, format="DD/MM/YYYY")
+    with col3:
+        lote = st.text_input("Lote de fabricação", value="").strip() or None
+    with col4:
+        artigo = st.text_input("Artigo", value="").strip() or None
+    with col5:
+        cor = st.text_input("Cor", value="").strip() or None
 
     return {
         "data_inicio": data_inicio.strftime("%Y-%m-%d"),
@@ -314,19 +314,54 @@ def main() -> None:
         st.stop()
 
     # ---------------------------------------------------------------------------
-    # Resumo
+    # Resumo — card estilizado (Story 4.2 AC4)
     # ---------------------------------------------------------------------------
     resumo = calcular_resumo(rows)
 
-    col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Total de linhas", resumo["total_linhas"])
-    col2.metric("Média % Diferença",
-                f"{resumo['media_pct_diferenca']:.2f}%" if resumo["media_pct_diferenca"] is not None else "—")
-    col3.metric("🟢 Verde",   resumo["total_verde"])
-    col4.metric("🟡 Amarelo", resumo["total_amarelo"])
-    col5.metric("🔴 Vermelho", resumo["total_vermelho"])
+    media_pct = (
+        f"{resumo['media_pct_diferenca']:.2f}%"
+        if resumo["media_pct_diferenca"] is not None else "—"
+    )
 
-    st.divider()
+    _METRIC_STYLE = (
+        "flex:1;min-width:120px;"
+        "display:flex;flex-direction:column;gap:4px;"
+    )
+    _LABEL_STYLE = (
+        "font-size:12px;font-weight:600;color:#43474f;"
+        "text-transform:uppercase;letter-spacing:0.04em;"
+    )
+    _VALUE_STYLE = "font-size:24px;font-weight:700;color:#1a1c1f;"
+
+    st.markdown(
+        f"""
+        <div style="border:1px solid #dee2e6;padding:20px;border-radius:4px;
+                    background:#ffffff;display:flex;gap:24px;
+                    flex-wrap:wrap;margin-bottom:16px;">
+          <div style="{_METRIC_STYLE}">
+            <span style="{_LABEL_STYLE}">Total de linhas</span>
+            <span style="{_VALUE_STYLE}">{resumo['total_linhas']}</span>
+          </div>
+          <div style="{_METRIC_STYLE}">
+            <span style="{_LABEL_STYLE}">Média % Diferença</span>
+            <span style="{_VALUE_STYLE}">{media_pct}</span>
+          </div>
+          <div style="{_METRIC_STYLE}">
+            <span style="{_LABEL_STYLE}">Verde ≤5%</span>
+            <span style="{_VALUE_STYLE};color:#28a745;">{resumo['total_verde']}</span>
+          </div>
+          <div style="{_METRIC_STYLE}">
+            <span style="{_LABEL_STYLE}">Amarelo 5–10%</span>
+            <span style="{_VALUE_STYLE};color:#856404;">{resumo['total_amarelo']}</span>
+          </div>
+          <div style="{_METRIC_STYLE}">
+            <span style="{_LABEL_STYLE}">Vermelho &gt;10%</span>
+            <span style="{_VALUE_STYLE};color:#dc3545;">{resumo['total_vermelho']}</span>
+          </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     # ---------------------------------------------------------------------------
     # Tabela AgGrid (PRD Story 1.2)
@@ -344,7 +379,7 @@ def main() -> None:
             gridOptions=grid_options,
             update_mode=GridUpdateMode.NO_UPDATE,
             allow_unsafe_jscode=True,
-            theme="alpine",
+            theme="streamlit",
             height=500,
             fit_columns_on_grid_load=False,
             enable_enterprise_modules=False,
@@ -359,36 +394,21 @@ def main() -> None:
     st.divider()
 
     # ---------------------------------------------------------------------------
-    # Exportações (PRD Story 1.4)
+    # Exportações (PRD Story 1.4 | Story 4.2 AC5)
+    # PDF = primário, Excel = secundário
     # ---------------------------------------------------------------------------
-    st.subheader("Exportar")
-    st.caption(
-        "A exportação usa as **linhas filtradas** e respeita a **visão atual das colunas**."
+    st.markdown(
+        "<p style='font-size:14px;font-weight:600;color:#1a1c1f;margin-bottom:4px;'>"
+        "Exportar</p>"
+        "<p style='font-size:12px;color:#43474f;margin-bottom:12px;'>"
+        "A exportação usa as <b>linhas filtradas</b> e respeita a "
+        "<b>visão atual das colunas</b>.</p>",
+        unsafe_allow_html=True,
     )
 
-    col_excel, col_pdf, _ = st.columns([1, 1, 4])
+    col_pdf, col_excel, _ = st.columns([1, 1, 4])
 
-    # Excel (PRD Story 1.4 AC6)
-    with col_excel:
-        try:
-            excel_bytes = _exportar_excel(df)
-            nome_arquivo = (
-                f"relatorio_recurtimento_"
-                f"{filtros['data_inicio']}_a_{filtros['data_fim']}.xlsx"
-            )
-            st.download_button(
-                label="📥 Exportar Excel",
-                data=excel_bytes,
-                file_name=nome_arquivo,
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                type="primary",
-            )
-        except Exception as exc:
-            # PRD Story 1.4 AC7
-            logger.error("ERRO_EXCEL | estacao=%s | erro=%s", ESTACAO, str(exc))
-            st.error(f"❌ Falha ao gerar o arquivo Excel.\n\n`{exc}`")
-
-    # PDF (PRD Story 1.4 AC3-5) — requer export_service.py
+    # PDF primário (PRD Story 1.4 AC3-5 | Story 4.2 AC5)
     with col_pdf:
         pdf_desabilitado = APP_ENV != "producao"
         if pdf_desabilitado:
@@ -417,6 +437,26 @@ def main() -> None:
                 except Exception as exc:
                     logger.error("ERRO_PDF | estacao=%s | erro=%s", ESTACAO, str(exc))
                     st.error(f"❌ Falha ao gerar o PDF.\n\n`{exc}`")
+
+    # Excel secundário (PRD Story 1.4 AC6 | Story 4.2 AC5)
+    with col_excel:
+        try:
+            excel_bytes = _exportar_excel(df)
+            nome_arquivo = (
+                f"relatorio_recurtimento_"
+                f"{filtros['data_inicio']}_a_{filtros['data_fim']}.xlsx"
+            )
+            st.download_button(
+                label="📥 Exportar Excel",
+                data=excel_bytes,
+                file_name=nome_arquivo,
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="secondary",
+            )
+        except Exception as exc:
+            # PRD Story 1.4 AC7
+            logger.error("ERRO_EXCEL | estacao=%s | erro=%s", ESTACAO, str(exc))
+            st.error(f"❌ Falha ao gerar o arquivo Excel.\n\n`{exc}`")
 
 
 if __name__ == "__main__":
