@@ -1,0 +1,159 @@
+/* Industrial Precision Design System — RetanFactor */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --color-primary: #001e40;
+    --color-primary-container: #003366;
+    --color-background: #f9f9fe;
+    --color-surface: #ffffff;
+    --color-surface-container: #eeedf2;
+    --color-on-surface: #1a1c1f;
+    --color-on-surface-variant: #43474f;
+    --color-outline: #737780;
+    --color-outline-variant: #c3c6d1;
+    --color-status-green: #28a745;
+    --color-status-yellow: #ffc107;
+    --color-status-red: #dc3545;
+    --radius-card: 4px;
+    --font-base: 'Inter', sans-serif;
+    --font-size-label: 12px;
+    --font-size-body: 14px;
+    --padding-card: 20px;
+}
+
+/* ── Tipografia global ───────────────────────────── */
+* { font-family: var(--font-base) !important; }
+
+/* ── Background da aplicação ────────────────────── */
+.stApp { background-color: var(--color-background) !important; }
+
+/* ── Ocultar elementos padrão do Streamlit ──────── */
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header[data-testid="stHeader"] { display: none; }
+
+/* ── Sidebar (nav) ───────────────────────────────── */
+section[data-testid="stSidebar"] {
+    background-color: var(--color-surface) !important;
+    border-right: 1px solid var(--color-outline-variant) !important;
+}
+
+/* ── Cards / containers ─────────────────────────── */
+.ip-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-outline-variant);
+    border-radius: var(--radius-card);
+    padding: var(--padding-card);
+}
+
+/* ── Labels dos inputs ───────────────────────────── */
+.stTextInput label,
+.stNumberInput label,
+.stDateInput label,
+.stSelectbox label,
+.stTextArea label,
+.stCheckbox label,
+.stMultiSelect label {
+    font-size: var(--font-size-label) !important;
+    font-weight: 600 !important;
+    color: var(--color-on-surface) !important;
+    letter-spacing: 0.02em;
+}
+
+/* ── Inputs: altura e borda ──────────────────────── */
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input {
+    height: 40px !important;
+    border: 1px solid var(--color-outline-variant) !important;
+    border-radius: var(--radius-card) !important;
+    font-size: var(--font-size-body) !important;
+    color: var(--color-on-surface) !important;
+    background-color: var(--color-surface) !important;
+}
+
+.stTextInput input:focus,
+.stNumberInput input:focus,
+.stDateInput input:focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 1px var(--color-primary) !important;
+    outline: none !important;
+}
+
+/* ── Selectbox ───────────────────────────────────── */
+.stSelectbox > div > div {
+    border: 1px solid var(--color-outline-variant) !important;
+    border-radius: var(--radius-card) !important;
+    min-height: 40px !important;
+}
+
+/* ── Textarea ────────────────────────────────────── */
+.stTextArea textarea {
+    border: 1px solid var(--color-outline-variant) !important;
+    border-radius: var(--radius-card) !important;
+    font-size: var(--font-size-body) !important;
+}
+
+.stTextArea textarea:focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 1px var(--color-primary) !important;
+}
+
+/* ── Botão primário ──────────────────────────────── */
+.stButton > button[kind="primary"],
+.stFormSubmitButton > button {
+    background-color: var(--color-primary) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: var(--radius-card) !important;
+    font-weight: 600 !important;
+    font-size: var(--font-size-body) !important;
+    height: 40px !important;
+}
+
+.stButton > button[kind="primary"]:hover,
+.stFormSubmitButton > button:hover {
+    background-color: var(--color-primary-container) !important;
+}
+
+/* ── Botão secundário ────────────────────────────── */
+.stButton > button[kind="secondary"] {
+    background-color: transparent !important;
+    color: var(--color-primary) !important;
+    border: 1px solid var(--color-primary) !important;
+    border-radius: var(--radius-card) !important;
+    font-weight: 600 !important;
+    font-size: var(--font-size-body) !important;
+    height: 40px !important;
+}
+
+.stButton > button[kind="secondary"]:hover {
+    background-color: rgba(0, 30, 64, 0.06) !important;
+}
+
+/* ── Banner de alerta (ambiente homologação) ─────── */
+.stAlert[data-baseweb="notification"] {
+    border-radius: var(--radius-card) !important;
+}
+
+/* ── AgGrid: header e zebra ──────────────────────── */
+.ag-theme-streamlit .ag-header {
+    background-color: #f1f3f5 !important;
+    font-size: var(--font-size-label) !important;
+    font-weight: 600 !important;
+    color: var(--color-on-surface-variant) !important;
+}
+
+.ag-theme-streamlit .ag-row-even {
+    background-color: var(--color-surface) !important;
+}
+
+.ag-theme-streamlit .ag-row-odd {
+    background-color: #f8f9fa !important;
+}
+
+.ag-theme-streamlit .ag-row {
+    height: 36px !important;
+    font-size: var(--font-size-body) !important;
+}

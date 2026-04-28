@@ -70,6 +70,13 @@ def render_env_banner() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Design system — re-exportações para uso nas páginas
+# ---------------------------------------------------------------------------
+
+from assets.theme import inject_global_css, render_page_header  # noqa: E402, F401
+
+
+# ---------------------------------------------------------------------------
 # Logging — configurado uma única vez na inicialização (Story 3.3 AC1)
 # ---------------------------------------------------------------------------
 

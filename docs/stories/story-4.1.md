@@ -1,7 +1,7 @@
 # Story 4.1 — Design System base: tema Streamlit e CSS Industrial Precision
 
 **Epic:** Epic 4 — Design e UX das Páginas
-**Status:** Ready
+**Status:** Ready for Review
 **Estimativa:** M
 
 ## Descrição
@@ -82,13 +82,30 @@ Como usuário da aplicação, quero que todas as páginas sigam um visual corpor
 
 ## Tasks
 
-- [ ] Criar `assets/styles.css` com variáveis CSS e classes do design system
-- [ ] Criar `assets/theme.py` com `inject_global_css()` e `render_page_header(title)`
-- [ ] Integrar `inject_global_css()` na inicialização de `config.py`
-- [ ] Atualizar `pages/01_relatorio.py` para usar `render_page_header()`
-- [ ] Atualizar `pages/02_cadastro.py` para usar `render_page_header()`
-- [ ] Atualizar `pages/03_historico.py` para usar `render_page_header()`
-- [ ] Escrever testes para `inject_global_css()` e `render_page_header()`
+- [x] Criar `assets/styles.css` com variáveis CSS e classes do design system
+- [x] Criar `assets/theme.py` com `inject_global_css()` e `render_page_header(title)`
+- [x] Integrar `inject_global_css()` na inicialização de `config.py`
+- [x] Atualizar `pages/01_relatorio.py` para usar `render_page_header()`
+- [x] Atualizar `pages/02_cadastro.py` para usar `render_page_header()`
+- [x] Atualizar `pages/03_historico.py` para usar `render_page_header()`
+- [x] Escrever testes para `inject_global_css()` e `render_page_header()`
+
+## Dev Agent Record
+
+### File List
+- `assets/styles.css` — criado
+- `assets/theme.py` — criado
+- `config.py` — modificado (re-exporta `inject_global_css`, `render_page_header`)
+- `pages/01_relatorio.py` — modificado (usa `inject_global_css` + `render_page_header`)
+- `pages/02_cadastro.py` — modificado (usa `inject_global_css` + `render_page_header`)
+- `pages/03_historico.py` — modificado (usa `inject_global_css` + `render_page_header`)
+- `tests/unit/test_theme.py` — criado (9 testes, 242/242 suite passando)
+
+### Completion Notes
+- `LOGO_PATH` aponta para `docs/logo/logo_viposa.png` (existente)
+- CSS injeta `@import` da Inter via Google Fonts e sobrescreve seletores Streamlit com `!important`
+- `render_page_header` usa `st.image` condicionalmente (só se o logo existir)
 
 ## Change Log
 - 2026-04-28: Story criada por @pm — Epic 4, Design System base
+- 2026-04-28: Implementada por @dev (Dex) — 242/242 testes passando, status: Ready for Review

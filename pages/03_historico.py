@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import ESTACAO, get_sqlite_conn, render_env_banner
+from config import ESTACAO, get_sqlite_conn, inject_global_css, render_env_banner, render_page_header
 from models.factor import FatorArtigo
 from services.factor_service import (
     buscar_fator,
@@ -386,9 +386,9 @@ def _render_form_cancelamento(fatores: list[FatorArtigo], conn) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    inject_global_css()
+    render_page_header(PAGE_TITLE)
     render_env_banner()
-    st.title(f"{PAGE_ICON} {PAGE_TITLE}")
-    st.caption(f"Estação: **{ESTACAO}**")
 
     filtros = _render_filtros()
 

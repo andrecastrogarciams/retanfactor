@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import ESTACAO, get_sqlite_conn, render_env_banner
+from config import ESTACAO, get_sqlite_conn, inject_global_css, render_env_banner, render_page_header
 from models.factor import FatorArtigo
 from services.factor_service import criar_fator
 
@@ -152,9 +152,9 @@ def _limpar_formulario() -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    inject_global_css()
+    render_page_header(PAGE_TITLE)
     render_env_banner()
-    st.title(f"{PAGE_ICON} {PAGE_TITLE}")
-    st.caption(f"Estação: **{ESTACAO}**")
     st.markdown(
         "Cadastre um novo fator de cálculo por código do artigo. "
         "A vigência define o período em que o fator será aplicado no relatório."

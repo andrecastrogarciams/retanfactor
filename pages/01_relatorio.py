@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from config import APP_ENV, ESTACAO, get_sqlite_conn, render_env_banner
+from config import APP_ENV, ESTACAO, get_sqlite_conn, inject_global_css, render_env_banner, render_page_header
 from models.report_row import CorDiferenca, ReportRow
 from services.report_service import calcular_resumo, get_relatorio
 
@@ -257,9 +257,9 @@ def _render_filtros() -> dict:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
+    inject_global_css()
+    render_page_header(PAGE_TITLE)
     render_env_banner()
-    st.title(f"{PAGE_ICON} {PAGE_TITLE}")
-    st.caption(f"Estação: **{ESTACAO}** | Ambiente: **{APP_ENV}**")
 
     filtros = _render_filtros()
 
